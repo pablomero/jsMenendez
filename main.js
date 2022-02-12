@@ -21,13 +21,73 @@ class Vendedor {
     }
     return Math.round(total);
   }
+
+  total() {
+    return this.salario + this.totalVentas + this.comision();
+  }
 }
+
+const btnAgregarVendedor = document.getElementById("btnAgregarVendedor");
+btnAgregarVendedor.addEventListener('click', () => {
+  agregarVendedor();
+})
+
+const listaVendedores = document.getElementById("listaVendedores");
 
 // Arrow function para generar valores random
 const randomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function htmlDetallesVendedor(vendedor) {
+  let divDetalles = document.getElementById(`detalles${vendedor.nombre}`);
+  divDetalles.innerHTML = `
+    <p>${vendedor.nombre}</p>
+    <p>Salario: <span>$${vendedor.salario}</span></p>
+    <p>Cantidad de ventas: <span>${vendedor.cantidadVentas}</span></p>
+    <p>Total de ventas: <span>$${vendedor.totalVentas}</span></p>
+    <p>Comision: <span>$${vendedor.comision()}</span></p>
+    <p>Total: <span>$${vendedor.total()}</span></p>
+  `
+}
+
+function htmlAgregarVendedor(vendedor) {
+  let div = document.createElement('div');
+  div.id = `card${vendedor.nombre}`;
+  div.className = 'vendedor';
+  div.innerHTML = `
+    <div class="usericon">
+      <input id="agregarVenta${vendedor.nombre}" type="button" value="Venta"</input>
+      <input id="eliminarVendedor${vendedor.nombre}" type="button" value ="Eliminar"</input>
+    </div>
+    <div id="detalles${vendedor.nombre}">
+    </div>
+  `;
+  listaVendedores.appendChild(div);
+  htmlDetallesVendedor(vendedor);
+
+  let btnAgregarVenta = document.getElementById(`agregarVenta${vendedor.nombre}`);
+  btnAgregarVenta.addEventListener('click', () => {
+    let indice = vendedores.findIndex(v => v.nombre == vendedor.nombre);
+    let precio;
+    do {
+      precio = parseInt(prompt("Ingrese precio de la venta"));
+    } while (!precio);
+    vendedores[indice].venta(precio);
+    htmlDetallesVendedor(vendedores[indice]);
+  });
+
+  let btnEliminarVendedor = document.getElementById(`eliminarVendedor${vendedor.nombre}`);
+  btnEliminarVendedor.addEventListener('click', () => {
+    eliminarVendedor(vendedor.nombre);
+  });
+}
+
+function htmlEliminarVendedor(nombre) {
+  let cardVendedor = document.getElementById(`card${nombre}`);
+  padre = cardVendedor.parentNode;
+  padre.removeChild(cardVendedor);
+}
 // Lista de vendedores con valores random
 const vendedores = [];
 for (const nombre of ["Carlos", "Andres", "Belen", "Nora"]) {
@@ -36,57 +96,11 @@ for (const nombre of ["Carlos", "Andres", "Belen", "Nora"]) {
     vendedor.venta(randomInt(100, 1000));
   }
   vendedores.push(vendedor);
+  htmlAgregarVendedor(vendedor);
 }
 
 function buscarVendedor(nombre) {
   return vendedores.find(vendedor => vendedor.nombre == nombre);
-}
-
-function menuVendedor(indice) {
-  let opcion;
-  do {
-    opcion = prompt(
-      "1-Ingresar venta\n" +
-      "2-Calcular sueldo\n" +
-      "x-Volver"
-    );
-    switch (opcion) {
-      case "1":
-        let precio;
-        do {
-          precio = parseInt(prompt("Ingrese precio de la venta"));
-        } while (!precio);
-        vendedores[indice].venta(precio);
-        break;
-      case "2":
-        let vendedor = vendedores[indice];
-        console.log(`Sueldo base: $ ${vendedor.salario}\n` +
-          `${vendedor.cantidadVentas} ventas por $${vendedor.totalVentas}\n` +
-          `Comisión: $${vendedor.comision()}\n` +
-          `Total: $${(vendedor.salario + vendedor.totalVentas + vendedor.comision())}`);
-        break;
-      case "x":
-        console.log("Volviendo al menú inicial");
-        break;
-      default:
-        console.log("Opcion no válida");
-    }
-
-  } while (opcion != "x");
-}
-
-function listarVendedores() {
-  console.log(vendedores.map(vendedor => vendedor.nombre).join("\n"));
-  let nombre;
-  do {
-    nombre = prompt("Ingrese nombre del vendedor para agregar venta");
-    if (buscarVendedor(nombre)) {
-      let indice = vendedores.findIndex(vendedor => vendedor.nombre == nombre);
-      menuVendedor(indice);
-    } else {
-      console.log("Vendedor no encontrado");
-    }
-  } while (!nombre || !buscarVendedor(nombre));
 }
 
 function agregarVendedor() {
@@ -101,46 +115,19 @@ function agregarVendedor() {
   do {
     salario = parseInt(prompt("Ingrese salario"));
   } while (!salario);
-  vendedores.push(new Vendedor(nombre, salario));
+  let vendedor = new Vendedor(nombre, salario);
+  vendedores.push(vendedor);
+  htmlAgregarVendedor(vendedor);
 }
 
-function eliminarVendedor() {
-  let nombre = prompt("Ingrese el nombre del vendedor a eliminar");
+function eliminarVendedor(nombre) {
   if (buscarVendedor(nombre)) {
     if (confirm("Confirmar eliminación")) {
       let indice = vendedores.findIndex(vendedor => vendedor.nombre == nombre);
       vendedores.splice(indice, 1);
+      htmlEliminarVendedor(nombre);
     }
   } else {
     console.log("Vendedor no encontrado");
   }
 }
-
-// Comienzo del simulador
-let opcion;
-do {
-  opcion = prompt(
-    "1-Vendedores\n" +
-    "2-Agregar vendedor\n" +
-    "3-Eliminar vendedor\n" +
-    "x-Salir"
-  );
-
-  switch (opcion) {
-    case "1":
-      listarVendedores();
-      break;
-    case "2":
-      agregarVendedor();
-      break;
-    case "3":
-      eliminarVendedor();
-      break;
-    case "x":
-      console.log("Finalizando ejecución");
-      break;
-    default:
-      console.log("Opción inválida");
-  }
-
-} while (opcion != "x");
