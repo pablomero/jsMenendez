@@ -27,12 +27,45 @@ class Vendedor {
   }
 }
 
+function buscarVendedor(nombre) {
+  return vendedores.find(vendedor => vendedor.nombre == nombre);
+}
+
+function agregarVendedor() {
+  let nombre;
+  do {
+    nombre = prompt("Ingrese el nombre");
+    if (buscarVendedor(nombre)) {
+      console.log("El nombre ya existe");
+    }
+  } while (!nombre || buscarVendedor(nombre));
+  let salario;
+  do {
+    salario = parseInt(prompt("Ingrese salario"));
+  } while (!salario);
+  let vendedor = new Vendedor(nombre, salario);
+  vendedores.push(vendedor);
+  htmlAgregarVendedor(vendedor);
+  localStorage.setItem('vendedores',JSON.stringify(vendedores));
+}
+
+function eliminarVendedor(nombre) {
+  if (buscarVendedor(nombre)) {
+    if (confirm("Confirmar eliminación")) {
+      let indice = vendedores.findIndex(vendedor => vendedor.nombre == nombre);
+      vendedores.splice(indice, 1);
+      htmlEliminarVendedor(nombre);
+      localStorage.setItem('vendedores',JSON.stringify(vendedores));
+    }
+  } else {
+    console.log("Vendedor no encontrado");
+  }
+}
+
 const btnAgregarVendedor = document.getElementById("btnAgregarVendedor");
 btnAgregarVendedor.addEventListener('click', () => {
   agregarVendedor();
 })
-
-const listaVendedores = document.getElementById("listaVendedores");
 
 // Arrow function para generar valores random
 const randomInt = (min, max) => {
@@ -75,6 +108,7 @@ function htmlAgregarVendedor(vendedor) {
     } while (!precio);
     vendedores[indice].venta(precio);
     htmlDetallesVendedor(vendedores[indice]);
+    localStorage.setItem('vendedores',JSON.stringify(vendedores));
   });
 
   let btnEliminarVendedor = document.getElementById(`eliminarVendedor${vendedor.nombre}`);
@@ -88,46 +122,28 @@ function htmlEliminarVendedor(nombre) {
   padre = cardVendedor.parentNode;
   padre.removeChild(cardVendedor);
 }
+
 // Lista de vendedores con valores random
+const listaVendedores = document.getElementById("listaVendedores");
 const vendedores = [];
-for (const nombre of ["Carlos", "Andres", "Belen", "Nora"]) {
-  let vendedor = new Vendedor(nombre, randomInt(10000, 20000));
-  for (i = 0; i <= randomInt(0, 10); i++) {
-    vendedor.venta(randomInt(100, 1000));
+
+if (localStorage.getItem('vendedores')) {
+  let arrVendedores = JSON.parse(localStorage.getItem('vendedores'));
+  for (const v of arrVendedores) {
+    let vendedor = new Vendedor(v.nombre, v.salario);
+    vendedor.cantidadVentas = v.cantidadVentas;
+    vendedor.totalVentas = v.totalVentas;
+    vendedores.push(vendedor);
+    htmlAgregarVendedor(vendedor);
   }
-  vendedores.push(vendedor);
-  htmlAgregarVendedor(vendedor);
-}
-
-function buscarVendedor(nombre) {
-  return vendedores.find(vendedor => vendedor.nombre == nombre);
-}
-
-function agregarVendedor() {
-  let nombre;
-  do {
-    nombre = prompt("Ingrese el nombre");
-    if (buscarVendedor(nombre)) {
-      console.log("El nombre ya existe");
+} else {
+  for (const nombre of ["Carlos", "Andres", "Belen", "Nora"]) {
+    let vendedor = new Vendedor(nombre, randomInt(10000, 20000));
+    for (i = 0; i <= randomInt(0, 10); i++) {
+      vendedor.venta(randomInt(100, 1000));
     }
-  } while (!nombre || buscarVendedor(nombre));
-  let salario;
-  do {
-    salario = parseInt(prompt("Ingrese salario"));
-  } while (!salario);
-  let vendedor = new Vendedor(nombre, salario);
-  vendedores.push(vendedor);
-  htmlAgregarVendedor(vendedor);
-}
-
-function eliminarVendedor(nombre) {
-  if (buscarVendedor(nombre)) {
-    if (confirm("Confirmar eliminación")) {
-      let indice = vendedores.findIndex(vendedor => vendedor.nombre == nombre);
-      vendedores.splice(indice, 1);
-      htmlEliminarVendedor(nombre);
-    }
-  } else {
-    console.log("Vendedor no encontrado");
+    vendedores.push(vendedor);
+    htmlAgregarVendedor(vendedor);
   }
+  localStorage.setItem('vendedores',JSON.stringify(vendedores));
 }
