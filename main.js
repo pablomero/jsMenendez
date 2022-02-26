@@ -31,32 +31,69 @@ function buscarVendedor(nombre) {
   return vendedores.find(vendedor => vendedor.nombre == nombre);
 }
 
-function agregarVendedor() {
-  let nombre;
-  do {
-    nombre = prompt("Ingrese el nombre");
-    if (buscarVendedor(nombre)) {
-      console.log("El nombre ya existe");
+async function agregarVendedor() {
+
+  const {
+    value: inputs
+  } = await Swal.fire({
+    title: 'Agregar Vendedor',
+    html: `<label for="swal-nombre">Nombre:</label>
+          <input id="swal-nombre" name="swal-nombre" class="swal2-input" placeholder="Nombre">
+          <label for="swal-salario">Salario:</label>
+          <input id="swal-salario" name="swal-salario" class="swal2-input" placeholder="Salario" type="number">`,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Agregar',
+    cancelButtonText: "Cancelar",
+    preConfirm: () => {
+      return [
+        document.getElementById('swal-nombre').value,
+        parseInt(document.getElementById('swal-salario').value)
+      ]
     }
-  } while (!nombre || buscarVendedor(nombre));
-  let salario;
-  do {
-    salario = parseInt(prompt("Ingrese salario"));
-  } while (!salario);
-  let vendedor = new Vendedor(nombre, salario);
-  vendedores.push(vendedor);
-  htmlAgregarVendedor(vendedor);
-  localStorage.setItem('vendedores',JSON.stringify(vendedores));
+  });
+  //desestructuración
+  let {
+    nombre,
+    salario
+  } = inputs;
+  if (!nombre) {
+    new Swal("Ingrese un nombre");
+  } else {
+    if (buscarVendedor(nombre)) {
+      new Swal("El nombre ya existe");
+    } else {
+      //operador ternario
+      salario = salario ? salario : 0;
+      let vendedor = new Vendedor(nombre, salario);
+      vendedores.push(vendedor);
+      htmlAgregarVendedor(vendedor);
+      localStorage.setItem('vendedores', JSON.stringify(vendedores));
+    }
+  }
 }
 
 function eliminarVendedor(nombre) {
   if (buscarVendedor(nombre)) {
-    if (confirm("Confirmar eliminación")) {
-      let indice = vendedores.findIndex(vendedor => vendedor.nombre == nombre);
-      vendedores.splice(indice, 1);
-      htmlEliminarVendedor(nombre);
-      localStorage.setItem('vendedores',JSON.stringify(vendedores));
-    }
+    Swal.fire({
+      title: 'Confirmar eliminación',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        let indice = vendedores.findIndex(vendedor => vendedor.nombre == nombre);
+        vendedores.splice(indice, 1);
+        htmlEliminarVendedor(nombre);
+        localStorage.setItem('vendedores', JSON.stringify(vendedores));
+        Swal.fire(
+          'Vendedor eliminado',
+          '',
+          'success'
+        )
+      }
+    })
+
   } else {
     console.log("Vendedor no encontrado");
   }
@@ -102,13 +139,19 @@ function htmlAgregarVendedor(vendedor) {
   let btnAgregarVenta = document.getElementById(`agregarVenta${vendedor.nombre}`);
   btnAgregarVenta.addEventListener('click', () => {
     let indice = vendedores.findIndex(v => v.nombre == vendedor.nombre);
-    let precio;
-    do {
-      precio = parseInt(prompt("Ingrese precio de la venta"));
-    } while (!precio);
-    vendedores[indice].venta(precio);
-    htmlDetallesVendedor(vendedores[indice]);
-    localStorage.setItem('vendedores',JSON.stringify(vendedores));
+    Swal.fire({
+      title: 'Ingrese precio de la venta',
+      input: 'number',
+      inputLabel: 'Precio',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (parseInt(value)) {
+          vendedores[indice].venta(parseInt(value));
+          htmlDetallesVendedor(vendedores[indice]);
+          localStorage.setItem('vendedores', JSON.stringify(vendedores));
+        }
+      }
+    })
   });
 
   let btnEliminarVendedor = document.getElementById(`eliminarVendedor${vendedor.nombre}`);
@@ -145,5 +188,5 @@ if (localStorage.getItem('vendedores')) {
     vendedores.push(vendedor);
     htmlAgregarVendedor(vendedor);
   }
-  localStorage.setItem('vendedores',JSON.stringify(vendedores));
+  localStorage.setItem('vendedores', JSON.stringify(vendedores));
 }
