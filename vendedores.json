@@ -1,0 +1,16 @@
+[{
+  "nombre": "Belen",
+  "salario": 10949,
+  "cantidadVentas": 4,
+  "totalVentas": 1776
+}, {
+  "nombre": "Nora",
+  "salario": 11425,
+  "cantidadVentas": 2,
+  "totalVentas": 1711
+}, {
+  "nombre": "Juan",
+  "salario": 10000,
+  "cantidadVentas": 5,
+  "totalVentas": 13000
+}]
