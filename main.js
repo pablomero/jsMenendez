@@ -68,7 +68,6 @@ async function agregarVendedor() {
       let vendedor = new Vendedor(nombre, salario);
       vendedores.push(vendedor);
       htmlAgregarVendedor(vendedor);
-      localStorage.setItem('vendedores', JSON.stringify(vendedores));
     }
   }
 }
@@ -85,7 +84,6 @@ function eliminarVendedor(nombre) {
         let indice = vendedores.findIndex(vendedor => vendedor.nombre == nombre);
         vendedores.splice(indice, 1);
         htmlEliminarVendedor(nombre);
-        localStorage.setItem('vendedores', JSON.stringify(vendedores));
         Swal.fire(
           'Vendedor eliminado',
           '',
@@ -148,7 +146,6 @@ function htmlAgregarVendedor(vendedor) {
         if (parseInt(value)) {
           vendedores[indice].venta(parseInt(value));
           htmlDetallesVendedor(vendedores[indice]);
-          localStorage.setItem('vendedores', JSON.stringify(vendedores));
         }
       }
     })
@@ -170,23 +167,17 @@ function htmlEliminarVendedor(nombre) {
 const listaVendedores = document.getElementById("listaVendedores");
 const vendedores = [];
 
-if (localStorage.getItem('vendedores')) {
-  let arrVendedores = JSON.parse(localStorage.getItem('vendedores'));
-  for (const v of arrVendedores) {
-    let vendedor = new Vendedor(v.nombre, v.salario);
-    vendedor.cantidadVentas = v.cantidadVentas;
-    vendedor.totalVentas = v.totalVentas;
-    vendedores.push(vendedor);
-    htmlAgregarVendedor(vendedor);
-  }
-} else {
-  for (const nombre of ["Carlos", "Andres", "Belen", "Nora"]) {
-    let vendedor = new Vendedor(nombre, randomInt(10000, 20000));
-    for (i = 0; i <= randomInt(0, 10); i++) {
-      vendedor.venta(randomInt(100, 1000));
+//usando fetch para traer json de Vendedores
+fetch('https://raw.githubusercontent.com/pablomero/jsMenendez/main/vendedores.json')
+  .then((res) => {
+    return res.json();
+  })
+  .then((jsonObj) => {
+    for (const v of jsonObj) {
+      let vendedor = new Vendedor(v.nombre, v.salario);
+      vendedor.cantidadVentas = v.cantidadVentas;
+      vendedor.totalVentas = v.totalVentas;
+      vendedores.push(vendedor);
+      htmlAgregarVendedor(vendedor);
     }
-    vendedores.push(vendedor);
-    htmlAgregarVendedor(vendedor);
-  }
-  localStorage.setItem('vendedores', JSON.stringify(vendedores));
-}
+  })
