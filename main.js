@@ -53,10 +53,10 @@ async function agregarVendedor() {
     }
   });
   //desestructuración
-  let {
+  let [
     nombre,
     salario
-  } = inputs;
+  ] = inputs;
   if (!nombre) {
     new Swal("Ingrese un nombre");
   } else {
